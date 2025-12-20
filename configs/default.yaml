@@ -1,0 +1,91 @@
+# Default configuration for explainable GNN models
+experiment:
+  name: "explainable_gnn_cora"
+  seed: 42
+  device: "auto"
+
+data:
+  dataset: "cora"
+  data_dir: "data/raw"
+  train_split: 0.6
+  val_split: 0.2
+  test_split: 0.2
+  normalize_features: true
+  add_self_loops: true
+  transform: ["normalize_features", "add_self_loops"]
+
+model:
+  type: "gcn"  # gcn, gat, gin, gcn2
+  hidden_dim: 64
+  num_layers: 2
+  dropout: 0.5
+  activation: "relu"
+  use_batch_norm: true
+  use_residual: false
+
+# GAT-specific parameters
+gat:
+  num_heads: 8
+  concat: true
+  negative_slope: 0.2
+
+# GIN-specific parameters
+gin:
+  eps: 0.0
+  train_eps: true
+
+# GCN2-specific parameters
+gcn2:
+  alpha: 0.1
+  theta: 0.5
+
+training:
+  epochs: 200
+  lr: 0.01
+  weight_decay: 5e-4
+  patience: 50
+  min_delta: 1e-4
+  batch_size: 1
+  grad_clip_norm: null
+
+explainability:
+  methods: ["gnn_explainer", "pg_explainer", "integrated_gradients"]
+  
+  gnn_explainer:
+    epochs: 200
+    lr: 0.01
+    return_type: "log_prob"
+    feat_mask_type: "feature"
+    allow_edge_mask: true
+    allow_node_mask: false
+  
+  pg_explainer:
+    epochs: 100
+    lr: 0.003
+    coff_size: 0.01
+    coff_ent: 0.01
+    t0: 5.0
+    t1: 1.0
+  
+  integrated_gradients:
+    steps: 50
+    multiply_by_inputs: true
+
+evaluation:
+  metrics: ["accuracy", "f1_macro", "f1_micro", "auc"]
+  explainability_metrics: ["fidelity", "sparsity", "stability", "contrastivity"]
+  num_explanations: 100
+  explanation_nodes: "test"  # train, val, test, all
+
+logging:
+  log_dir: "logs"
+  use_wandb: false
+  use_tensorboard: true
+  log_interval: 10
+  save_interval: 50
+
+paths:
+  checkpoints: "checkpoints"
+  assets: "assets"
+  plots: "assets/plots"
+  explanations: "assets/explanations"

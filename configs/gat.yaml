@@ -1,0 +1,67 @@
+# Configuration for Graph Attention Network (GAT)
+experiment:
+  name: "explainable_gnn_gat"
+  seed: 42
+  device: "auto"
+
+data:
+  dataset: "cora"
+  data_dir: "data/raw"
+  normalize_features: true
+  add_self_loops: true
+  transform: ["normalize_features", "add_self_loops"]
+
+model:
+  type: "gat"
+  hidden_dim: 64
+  num_layers: 2
+  dropout: 0.5
+  activation: "elu"
+  use_batch_norm: true
+  use_residual: false
+
+gat:
+  num_heads: 8
+  concat: true
+  negative_slope: 0.2
+
+training:
+  epochs: 200
+  lr: 0.01
+  weight_decay: 5e-4
+  patience: 50
+  min_delta: 1e-4
+
+explainability:
+  methods: ["gnn_explainer", "attention", "integrated_gradients"]
+  
+  gnn_explainer:
+    epochs: 200
+    lr: 0.01
+    return_type: "log_prob"
+    feat_mask_type: "feature"
+    allow_edge_mask: true
+    allow_node_mask: false
+  
+  integrated_gradients:
+    steps: 50
+    multiply_by_inputs: true
+
+evaluation:
+  metrics: ["accuracy", "f1_macro", "f1_micro", "auc"]
+  explainability_metrics: ["fidelity", "sparsity", "stability", "contrastivity"]
+  num_explanations: 100
+  explanation_nodes: "test"
+
+logging:
+  log_dir: "logs"
+  use_wandb: false
+  use_tensorboard: true
+  log_interval: 10
+  save_interval: 50
+
+paths:
+  checkpoints: "checkpoints"
+  assets: "assets"
+  plots: "assets/plots"
+  explanations: "assets/explanations"
